@@ -12,7 +12,7 @@ from interpolation_layer import single_channel_interp, cross_channel_interp
 from mimic_preprocessing import load_data, trim_los, fix_input_format
 
 np.random.seed(10)
-tf.set_random_seed(10)
+tf.compat.v1.set_random_seed(10)
 
 
 def hold_out(mask, perc=0.2):
@@ -76,8 +76,7 @@ args = vars(ap.parse_args())
 gpu_num = args["gpus"]
 epoch = args["epochs"]
 hid = args["hidden_units"]
-timestamp = x.shape[2]
-num_features = x.shape[1]/4
+
 ref_points = args["reference_points"]
 hours_look_ahead = args["hours_from_adm"]
 if gpu_num > 0:
@@ -103,7 +102,9 @@ x, m, T = fix_input_format(vitals, timestamps)
 mean_imputation(x, m)
 x = np.concatenate((x, m, T, hold_out(m)), axis=1)  # input format
 y = np.array(label)
-print x.shape, y.shape
+timestamp = x.shape[2]
+num_features = int(x.shape[1]/4)
+print (x.shape, y.shape)
 
 
 def customloss(ytrue, ypred):
@@ -140,7 +141,7 @@ results['auprc'] = []
 
 
 def interp_net():
-    if gpu_num > 1:
+    if gpu_num < 1:
         dev = "/cpu:0"
     else:
         dev = "/gpu:0"
@@ -160,7 +161,7 @@ def interp_net():
         model = multi_gpu_model(orig_model, gpus=gpu_num)
     else:
         model = orig_model
-    print orig_model.summary()
+    print (orig_model.summary())
     return model
 
 
@@ -173,7 +174,7 @@ callbacks_list = [earlystop]
 i = 0
 kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
 for train, test in kfold.split(np.zeros(len(y)), y):
-    print "Running Fold:", i+1
+    print ("Running Fold:", i+1)
     model = interp_net()  # re-initializing every time
     model.compile(
         optimizer='adam',
@@ -198,5 +199,5 @@ for train, test in kfold.split(np.zeros(len(y)), y):
     results['acc'].append(acc)
     results['auc'].append(auc_score(y[test], y_pred))
     results['auprc'].append(auprc(y[test], y_pred))
-    print results
+    print (results)
     i += 1
