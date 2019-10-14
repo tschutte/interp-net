@@ -188,7 +188,7 @@ for train, test in kfold.split(np.zeros(len(y)), y):
         {'input': x[train]}, {'main_output': y[train], 'aux_output': x[train]},
         batch_size=batch,
         callbacks=callbacks_list,
-        nb_epoch=epoch,
+        epochs=epoch,
         validation_split=0.20,
         verbose=2)
     y_pred = model.predict(x[test], batch_size=batch)
