@@ -71,11 +71,14 @@ ap.add_argument("-units", "--hidden_units", type=int,
                 default=100, help="# of hidden units")
 ap.add_argument("-hfadm", "--hours_from_adm", type=int,
                 default=48, help="Hours of record to look at")
+ap.add_argument("-input", "--input_file", type=str,
+                default='vitals_records.p', help="Input data file")
 
 args = vars(ap.parse_args())
 gpu_num = args["gpus"]
 epoch = args["epochs"]
 hid = args["hidden_units"]
+input_file = args["input_file"]
 
 ref_points = args["reference_points"]
 hours_look_ahead = args["hours_from_adm"]
@@ -96,7 +99,7 @@ else:
 # m : (N, D, tn) where m[i,j,k] = 0 means that x[i,j,k] is not observed.
 # T : (N, D, tn) represents the actual time stamps of observation;
 
-vitals, label = load_data()
+vitals, label = load_data(input_file)
 vitals, timestamps = trim_los(vitals, hours_look_ahead)
 x, m, T = fix_input_format(vitals, timestamps)
 mean_imputation(x, m)

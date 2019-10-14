@@ -3,9 +3,11 @@ import copy
 import numpy as np
 
 
-def load_data():
+def load_data(input_file):
     print ('Loading files ...')
-    vitals = pickle.load(open('vitals_records.p', 'rb'))
+    #vitals = pickle.load(open('vitals_records.p', 'rb'))
+    vitals = pickle.load(open(input_file, 'rb'))
+
     adm_info = pickle.load(
         open('adm_type_los_mortality.p', 'rb'))
     adm_info = adm_info[:len(vitals)]
